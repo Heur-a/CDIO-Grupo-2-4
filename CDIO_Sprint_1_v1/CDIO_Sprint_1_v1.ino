@@ -23,8 +23,8 @@ void setup () {
   Serial.println("Rango del ADC: +/- 4.096V (1 bit=2mV)");
 }
 
-void loop() {
-  int16_t adc0;
+void humedad(){
+  
 
   int16_t adc1;
   int16_t humedad;
@@ -38,9 +38,10 @@ void loop() {
     Serial.print(humedad);
     Serial.println("%");*/
 
-
-
-  //Alimentamos sonda con tren de pulsos
+}
+void salinidad(){
+  int16_t adc0;
+   //Alimentamos sonda con tren de pulsos
   digitalWrite(power_pin, HIGH);
   delay (100);
 
@@ -65,4 +66,13 @@ void loop() {
 
 
   counter = counter + 1;
+}
+
+
+void loop() {
+  
+void humedad();
+void salinidad();
+
+  
 }
