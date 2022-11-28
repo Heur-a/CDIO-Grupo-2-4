@@ -102,6 +102,7 @@ void loop() {
   
 void humedad();
 void salinidad();
+void pH();
 
   
 }
