@@ -69,22 +69,22 @@ void salinidad(){
 }
 void pH (void) {
   #define channelvalue 0
-#define Offset 0.00
-#define samplingInterval 20
-#define printInterval 20
-#define printInterval 800
-#define ArrayLength 40
-int pHArray[ArrayLength];
-int pHArrayIndex=0;
+  #define Offset 0.00
+  #define samplingInterval 20
+  #define printInterval 20
+  #define printInterval 800
+  #define ArrayLength 40
+  int pHArray[ArrayLength];
+  int pHArrayIndex=0;
   static unsigned long samplingTime=millis();
   static unsigned long printTime=millis();
   static float pHValue, voltage;
   if(millis() - samplingTime > samplingInterval){
-    pHArray[pHArrayIndex++]= ads1115.readADC_SingleEnded(0);
+    pHArray[pHArrayIndex++]= ads1115.readADC_SingleEnded(1);
     if(pHArrayIndex== ArrayLength)pHArrayIndex = 0;
 
     //Convertir la lectura en tension
-    voltage=ads1115.readADC_SingleEnded(0);
+    voltage=(4.096/32767.0) * ads1115.readADC_SingleEnded(0);    
     pHValue=3.5*voltage+Offset;
     samplingTime=millis();
   }
