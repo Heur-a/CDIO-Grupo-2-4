@@ -28,7 +28,7 @@ void loop(void) {
     if(pHArrayIndex== ArrayLength)pHArrayIndex = 0;
 
     //Convertir la lectura en tension
-    voltage=ads1115.readADC_SingleEnded(0);
+    voltage=(4.096/32767.0) * ads1115.readADC_SingleEnded(0);
     pHValue=3.5*voltage+Offset;
     samplingTime=millis();
   }
