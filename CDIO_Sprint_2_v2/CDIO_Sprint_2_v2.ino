@@ -45,22 +45,23 @@ void humedad() {
     Serial.println("%");*/
 
 }
-void salinidad() {
+float salinidad(int canalAdc) {
   int16_t adc0;
   //Alimentamos sonda con tren de pulsos
   digitalWrite(power_pin, HIGH);
   delay (100);
 
   //leemos cuando hay nivel alto
-  adc0 = analogRead(A0);
+  adc0 = analogRead(canalAdc);
   digitalWrite(power_pin, LOW);
   delay(100);
   if (adc0 < 573) {
     adc0 = 573;
   }
   float ValSal = 0;
-  ValSal = 0.0000007 * adc0 * adc0 * adc0 - 0.0006 * adc0 * adc0 + 0.114 * adc0;
+  ValSal = 0.0000007  * pow(adc0,3) - 0.0006 *pow(adc0,2) + 0.114 * adc0;
 
+  return ValSal;
   //Imprimimos info
   if (counter % rep == 0) {
     //Serial.print("Lectura digital sal = "); Serial.println(adc0, DEC);
@@ -73,7 +74,7 @@ void salinidad() {
 
   counter = counter + 1;
 }
-void pH (void) {
+float pHfunc (int canalAdc) {
 #define channelvalue 0
 #define Offset 0.00
 #define samplingInterval 20
@@ -86,13 +87,14 @@ void pH (void) {
   static unsigned long printTime = millis();
   static float pHValue, voltage;
   if (millis() - samplingTime > samplingInterval) {
-    pHArray[pHArrayIndex++] = ads1115.readADC_SingleEnded(1);
+    pHArray[pHArrayIndex++] = ads1115.readADC_SingleEnded(canalAdc);
     if (pHArrayIndex == ArrayLength)pHArrayIndex = 0;
 
     //Convertir la lectura en tension
     voltage = (4.096 / 32767.0) * ads1115.readADC_SingleEnded(1);
     pHValue = 3.5 * voltage + Offset;
     samplingTime = millis();
+    return canalAdc, voltage;
   }
   if (millis() - printTime > printInterval) {
     Serial.print("Voltage:");
@@ -106,76 +108,15 @@ void pH (void) {
 }
 void loop() {
 
-  int16_t adc1;
-  int16_t humedad;
-  adc1 = ads1115.readADC_SingleEnded(0);
-  humedad = 100 * AirValue / (AirValue - WaterValue) - adc1 * 100 / (AirValue - WaterValue);
-
-
-  /*Serial.print("AIN0: ");
-    Serial.println(adc1);
-    Serial.print("HR (%): ");
-    Serial.print(humedad);
-    Serial.println("%");*/
-  int16_t adc0;
-  //Alimentamos sonda con tren de pulsos
-  digitalWrite(power_pin, HIGH);
-  delay (100);
-  static unsigned long samplingTime = millis();
-  static unsigned long printTime = millis();
-
-  //leemos cuando hay nivel alto
-  adc0 = analogRead(A0);
-  digitalWrite(power_pin, LOW);
-  delay(100);
-  if (adc0 < 573) {
-    adc0 = 573;
-  }
-  float ValSal = 0;
-  ValSal = 0.0000007 * adc0 * adc0 * adc0 - 0.0006 * adc0 * adc0 + 0.114 * adc0;
-
-  //Imprimimos info
-  if (millis() - printTime > printInterval) {
-    //Serial.print("Lectura digital sal = "); Serial.println(adc0, DEC);
-    if (adc0  == 573) {
-      ValSal = 0;
-    }
-    Serial.print("Cantidad de sal g= "); Serial.println(ValSal, DEC);
-  }
-
-
-  counter = counter + 1;
-
-  int pHArray[ArrayLength];
-  int pHArrayIndex = 0;
-  static float pHValue, voltage;
-  if (millis() - samplingTime > samplingInterval) {
-    pHArray[pHArrayIndex++] = ads1115.readADC_SingleEnded(1);
-    if (pHArrayIndex == ArrayLength)pHArrayIndex = 0;
-
-    //Convertir la lectura en tension
-    voltage = (4.096 / 32767.0) * ads1115.readADC_SingleEnded(1);
-    pHValue = 3.5 * voltage + Offset;
-    samplingTime = millis();
-  }
-  if (millis() - printTime > printInterval) {
+ int canalPH = 1;
+ int canalSal = 0xA0;
+ static unsigned long printTime = millis();
+ float pH, voltatgePH = pHfunc(canalpH)
+ if (millis() - printTime > printInterval) {
     Serial.print("Voltage:");
     Serial.print(voltage, 2);
     Serial.print("  pH value: ");
     Serial.println(pHValue, 2);
     printTime = millis();
-  }
-  int16_t adc2 = ads1115.readADC_SingleEnded(2);
-
-  Serial.println(adc2);
-
-  float temperatura = ((((adc2 * 4.096) / 32767) - 0.75) / 0.037) - 5;
-  if (millis() - printTime > printInterval) {
-    Serial.print("La temperatura es: ");
-    Serial.print(temperatura);
-    Serial.println(" ºC");
-    delay(1000);
-  }
-
 
 }
