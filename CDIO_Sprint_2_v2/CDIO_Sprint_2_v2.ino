@@ -2,12 +2,29 @@
 #include <math.h>
 #include <Wire.h>
 #include <Adafruit_ADS1X15.h>
+//pH defines
 #define channelvalue 0
 #define Offset 0.00
 #define samplingInterval 20
 #define printInterval 20
 #define printInterval 800
-#define ArrayLength 40
+#define ArrayLength 40 
+//------------------------------------------------------------------------------------
+//
+//              CANALS SENSORS
+//
+//------------------------------------------------------------------------------------
+#define canalpH 3
+#define canalLlum 1
+#define canalTemp  0
+#define canalHum 2
+#define canalSal A0
+
+//----------------------------------------------------------------------------------
+//
+//                  INIT ADAFRUIT I HUMITAT
+//
+//-----------------------------------------------------------------------------
 
 Adafruit_ADS1115 ads1115; // construct an ads1115 at address 0x48
 const int AirValue = 30150;  // Medimos valor en seco
@@ -15,7 +32,11 @@ const int WaterValue = 17300;  // Medimos valor en agua
 int counter = 0;
 int rep = 5;
 
-
+//--------------------------------------------------------------------------------
+//
+//                    SETUP
+//
+//---------------------------------------------------------------------------------
 void setup () {
   pinMode(power_pin, OUTPUT);
   Serial.begin(9600);
@@ -27,9 +48,45 @@ void setup () {
   Serial.println("Tomando medidas del canal AIN0");
 
   Serial.println("Rango del ADC: +/- 4.096V (1 bit=2mV)");
+
+}
+/*-----------------------------------------------------------------------------------------------
+|
+|
+|
+|                          canaladc -> FUNCIONS() -> valor,float
+|
+|                        Magnituds amb funció:
+|                          LLUM
+|                          HUM*
+|                          SAL
+|                          pH
+|                          TEMP*
+|
+|                    *per implementar correctament
+|
+|                               | | | | | | | | | | | | |
+|                               v v v v v v v v v v v v v
+------------------------------------------------------------------------------------------------*/
+
+
+//-----------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//            FUNC LLUM
+//------------------------------------------------------
+//-----------------------------------------
+
+float funcLlum(unsigned int canalAdc, int16_t * adcOut ){
+  int16_t adc;
+  adc = ads1115.readADC_SingleEnded(canalAdc);
+  (*adcOut) = adc;
+  static float Vout;
+  Vout = ((4.096) * adc) / (32767); //formula Luminositat
+  return Vout;
+
 }
 
-void humedad() {
+float  funcHum(unsigned int adc1 ) {
 
 
   int16_t adc1;
@@ -43,9 +100,17 @@ void humedad() {
     Serial.print("HR (%): ");
     Serial.print(humedad);
     Serial.println("%");*/
+  return humedad;
+  
+  
+  //---------------------------------------------------------------
+  //-------------------------------------------------------
+  //      FUNCION SAL
+  //------------------------------------------------
+  //-----------------------------------------
 
 }
-float salinidad(int canalAdc) {
+float funcSal(uint8_t canalAdc) {
   int16_t adc0;
   //Alimentamos sonda con tren de pulsos
   digitalWrite(power_pin, HIGH);
@@ -56,31 +121,34 @@ float salinidad(int canalAdc) {
   digitalWrite(power_pin, LOW);
   delay(100);
   if (adc0 < 573) {
-    adc0 = 573;
+    adc0 = 573;  //Ocultem datos xicotets que donarien resultats incogruents
   }
   float ValSal = 0;
-  ValSal = 0.0000007  * pow(adc0,3) - 0.0006 *pow(adc0,2) + 0.114 * adc0;
+  ValSal = 0.0000007  * pow(adc0,3) - 0.0006 *pow(adc0,2) + 0.114 * adc0; //Lagrange fórmula
+  if (adc0  == 573) {
+    ValSal = 0; //si les dades son del rango on no dona resultats son 0g, que deuria de ser del rang
+  }             // de 0 < x < 5 g
 
   return ValSal;
   //Imprimimos info
   if (counter % rep == 0) {
     //Serial.print("Lectura digital sal = "); Serial.println(adc0, DEC);
-    if (adc0  == 573) {
-      ValSal = 0;
-    }
     Serial.print("Cantidad de sal g= "); Serial.println(ValSal, DEC);
   }
 
 
   counter = counter + 1;
 }
-float pHfunc (int canalAdc) {
-#define channelvalue 0
-#define Offset 0.00
-#define samplingInterval 20
-#define printInterval 20
-#define printInterval 800
-#define ArrayLength 40
+
+//-------------------------------------------------------------------------------
+//--------------------------------------------------------------------
+//    FUNCIO PH
+//------------------------------------------------------
+//---------------------------------------------
+
+
+float funcpH (int canalAdc) {
+
   int pHArray[ArrayLength];
   int pHArrayIndex = 0;
   static unsigned long samplingTime = millis();
@@ -88,35 +156,72 @@ float pHfunc (int canalAdc) {
   static float pHValue, voltage;
   if (millis() - samplingTime > samplingInterval) {
     pHArray[pHArrayIndex++] = ads1115.readADC_SingleEnded(canalAdc);
-    if (pHArrayIndex == ArrayLength)pHArrayIndex = 0;
-
+    if (pHArrayIndex == ArrayLength){
+      pHArrayIndex = 0;
+      double counter = 0.0;
+      for (int i = 0; i < ArrayLength; i++){
+        counter = pHArray[i] + counter; 
+      } 
+    }
+    double valueIpH = counter/ArrayLength;
     //Convertir la lectura en tension
-    voltage = (4.096 / 32767.0) * ads1115.readADC_SingleEnded(1);
+
+
+    voltage = (4.096 / 32767.0) * valueIpH;
     pHValue = 3.5 * voltage + Offset;
     samplingTime = millis();
-    return canalAdc, voltage;
+    return pHValue;
   }
-  if (millis() - printTime > printInterval) {
-    Serial.print("Voltage:");
-    Serial.print(voltage, 2);
-    Serial.print("  pH value: ");
-    Serial.println(pHValue, 2);
-    printTime = millis();
-  }
+  
 
 
 }
 void loop() {
+float pH,VoltLlum,Temp,Hum,Sal,voltatgepH = 0;
+int16_t adcLlum = 0;
+pH = funcpH(canalpH);
+VoltLlum = funcLlum(canalLlum, &adcLlum);
+Sal = funcSal(canalSal);
+// Temp = funcTemp (canalTemp);
+// Hum = funcHum(canalHum)
 
- int canalPH = 1;
- int canalSal = 0xA0;
- static unsigned long printTime = millis();
- float pH, voltatgePH = pHfunc(canalpH)
- if (millis() - printTime > printInterval) {
-    Serial.print("Voltage:");
-    Serial.print(voltage, 2);
+//--------------PRINT----------------------
+static unsigned long printTime = millis();
+if (millis() - printTime > printInterval) {
+    //pH
     Serial.print("  pH value: ");
-    Serial.println(pHValue, 2);
+    Serial.println(pH, 2);
     printTime = millis();
 
-}
+     //Sal
+
+    Serial.print("Cantidad de sal g= "); Serial.println(Sal,2);
+    //Llum
+
+    Serial.print("V out Llum:"); Serial.print(VoltLlum, 3); Serial.println ("V");
+    if (adcLlum <= 200) {
+      Serial.println("Esta a la sombra");
+    }
+
+    if (adcLlum > 200 && adcLlum <= 1000) {
+      Serial.println("Luz natural ambiente");
+    }
+    if (adcLlum > 1000) {
+      Serial.println("Luz extrema");
+    }
+
+
+
+    printTime = millis();
+
+  }
+
+
+
+
+
+
+   
+
+  }
+
