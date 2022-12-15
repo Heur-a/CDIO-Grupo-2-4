@@ -85,9 +85,14 @@ float funcLlum(unsigned int canalAdc, int16_t * adcOut ){
   return Vout;
 
 }
+//-----------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//            FUNC HUMEDAD
+//------------------------------------------------------
+//-----------------------------------------
 
-float  funcHum(unsigned int adc1 ) {
-
+float  funcHum(unsigned int canalAdc ) {
+/*
 
   int16_t adc1;
   int16_t humedad;
@@ -100,9 +105,17 @@ float  funcHum(unsigned int adc1 ) {
     Serial.print("HR (%): ");
     Serial.print(humedad);
     Serial.println("%");*/
-  return humedad;
-  
-  
+     //return humedad;*/
+     
+ int16_t adc1;
+  int  sensorValue = analogRead (canalAdc);
+  int humidityValue = 100 * AirValue / (AirValue - WaterValue) - adc1 * 100 / (AirValue - WaterValue);
+  Serial.println ();
+  Serial.print ("Humedad: ");
+  Serial.print (humidityValue);
+  Serial.println("%");
+  delay (1000);
+    
   //---------------------------------------------------------------
   //-------------------------------------------------------
   //      FUNCION SAL
@@ -224,4 +237,3 @@ if (millis() - printTime > printInterval) {
    
 
   }
-
