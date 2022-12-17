@@ -9,7 +9,7 @@
 #define WiFi_CONNECTION_UPV
 
 // Selecciona que servidor REST quieres utilizar entre ThingSpeak y Dweet
-#define REST_SERVER_THINGSPEAK //Selecciona tu canal para ver los datos en la web (https://thingspeak.com/channels/360979)
+//#define REST_SERVER_THINGSPEAK //Selecciona tu canal para ver los datos en la web (https://thingspeak.com/channels/360979)
 ///////////////////////////////////////////////////////
 /////////////// WiFi Definitions /////////////////////
 //////////////////////////////////////////////////////
