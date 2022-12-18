@@ -253,10 +253,7 @@ float funcTemp(unsigned int canalAdc){
   //  float temperatura = ((((adc0*4.096)/32767)-0.79)/0.035)-5;
 
 
-  Serial.print("La temperatura es: ");
-  Serial.print(temperatura);
-  Serial.println(" ºC");
-  delay(1000);
+  return temperatura;
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -280,7 +277,7 @@ float  funcHum(unsigned int canalAdc ) {
     Serial.print("HR (%): ");
     Serial.print(humedad);
     Serial.println("%");*/
-     //return humedad;*/
+     //return humedad;
      
   int  sensorValue = analogRead (canalAdc);
   int humidityValue = 100 * AirValue / (AirValue - WaterValue) - sensorValue * 100 / (AirValue - WaterValue);
@@ -289,6 +286,7 @@ float  funcHum(unsigned int canalAdc ) {
   Serial.print (humidityValue);
   Serial.println("%");
   delay (1000);
+  return humidityValue;
 
 }
   //---------------------------------------------------------------
@@ -350,9 +348,11 @@ float funcpH (int canalAdc) {
     voltage = (4.096 / 32767.0) * valueIpH;
     pHValue = 3.5 * voltage + Offset;
     samplingTime = millis();
-    return pHValue;
+   
   }
+   return pHValue;
   
+}//()
 //-----------------------------------------------------------
 //-----------------------------------------------------------
 //
@@ -361,9 +361,6 @@ float funcpH (int canalAdc) {
 //-----------------------------------------------------------
 //-----------------------------------------------------------
   
-
-
-}
 void loop() {
   float pH,VoltLlum,Temp,Hum,Sal,voltatgepH = 0;
   int16_t adcLlum = 0;
