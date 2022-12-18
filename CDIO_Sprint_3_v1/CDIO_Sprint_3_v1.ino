@@ -61,7 +61,7 @@ void setup () {
 |                          HUM*
 |                          SAL
 |                          pH
-|                          TEMP*
+|                          TEMP
 |
 |                    *per implementar correctament
 |
@@ -103,12 +103,8 @@ float funcTemp(unsigned int canalAdc){
   //  float temperatura = ((((adc0*4.096)/32767)-0.79)/0.035)-5;
 
 
-  Serial.print("La temperatura es: ");
-  Serial.print(temperatura);
-  Serial.println(" ºC");
-  delay(1000);
+  return temperatura; //FALTAVA RETURN TEMP
 }
-
 //-----------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //            FUNC HUMEDAD
