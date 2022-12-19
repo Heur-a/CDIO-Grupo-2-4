@@ -13,10 +13,10 @@
 //              CANALS SENSORS
 //
 //------------------------------------------------------------------------------------
-#define canalpH 3
-#define canalLlum 1
-#define canalTemp  0
-#define canalHum 2
+#define canalpH 2
+#define canalLlum 3
+#define canalTemp  1
+#define canalHum 0
 #define canalSal A0
 
 //----------------------------------------------------------------------------------
@@ -75,13 +75,14 @@ void setup () {
 //------------------------------------------------------
 //-----------------------------------------
 
-float funcLlum(unsigned int canalAdc, int16_t * adcOut ){
+int16_t funcLlum(unsigned int canalAdc, float * V ){
   int16_t adc;
   adc = ads1115.readADC_SingleEnded(canalAdc);
-  (*adcOut) = adc;
-  static float Vout;
+   static float Vout;
   Vout = ((4.096) * adc) / (32767); //formula Luminositat
-  return Vout;
+  (*V) = Vout;
+  return adc;
+ 
 
 }
 
@@ -96,7 +97,6 @@ float funcTemp(unsigned int canalAdc){
   
   int16_t adc0 = ads1115.readADC_SingleEnded(0);
 
-  Serial.println(adc0);
 
   float temperatura = ((((adc0*4.096)/32767)-0.75)/0.037)-5;
   //  float temperatura = ((((adc0*4.096)/32767)-0.79)/0.035)-5;
@@ -110,7 +110,7 @@ float funcTemp(unsigned int canalAdc){
 //------------------------------------------------------
 //-----------------------------------------
 
-float  funcHum(unsigned int canalAdc ) {
+/*float  funcHum(unsigned int canalAdc ) {
 
 
   int16_t adc1;
@@ -124,19 +124,16 @@ float  funcHum(unsigned int canalAdc ) {
     Serial.println(adc1);
     Serial.print("HR (%): ");
     Serial.print(humedad);
-    Serial.println("%");*/
+    Serial.println("%");
      //return humedad;
      
+ 
   int  sensorValue = analogRead (canalAdc);
   int humidityValue = 100 * AirValue / (AirValue - WaterValue) - sensorValue * 100 / (AirValue - WaterValue);
-  Serial.println ();
-  Serial.print ("Humedad: ");
-  Serial.print (humidityValue);
-  Serial.println("%");
+  return humidityValue; 
   delay (1000);
-  return humidityValue;
 
-}
+}*/
   //---------------------------------------------------------------
   //-------------------------------------------------------
   //      FUNCION SAL
@@ -163,14 +160,7 @@ float funcSal(uint8_t canalAdc) {
   }             // de 0 < x < 5 g
 
   return ValSal;
-  //Imprimimos info
-  if (counter % rep == 0) {
-    //Serial.print("Lectura digital sal = "); Serial.println(adc0, DEC);
-    Serial.print("Cantidad de sal g= "); Serial.println(ValSal, DEC);
-  }
 
-
-  counter = counter + 1;
 }
 
 //-------------------------------------------------------------------------------
@@ -188,7 +178,7 @@ float funcpH (int canalAdc) {
   //static unsigned long printTime = millis();
   static float pHValue, voltage;
   if (millis() - samplingTime > samplingInterval) {
-    pHArray[pHArrayIndex++] = ads1115.readADC_SingleEnded(canalAdc);
+   /* pHArray[pHArrayIndex++] = ads1115.readADC_SingleEnded(canalAdc);
     if (pHArrayIndex == ArrayLength){
       pHArrayIndex = 0;
       double counter = 0.0;
@@ -196,7 +186,8 @@ float funcpH (int canalAdc) {
         counter = pHArray[i] + counter; 
       } 
     }
-    double valueIpH = counter/ArrayLength;
+    */
+    double valueIpH = ads1115.readADC_SingleEnded(canalAdc);
     //Convertir la lectura en tension
 
 
@@ -220,11 +211,10 @@ float funcpH (int canalAdc) {
 
 void loop() {
   float pH,VoltLlum,Temp,Hum,Sal,voltatgepH = 0;
-  int16_t adcLlum = 0;
+  int16_t adcLlum = funcLlum(canalLlum,&VoltLlum);
   pH = funcpH(canalpH);
-  VoltLlum = funcLlum(canalLlum, &adcLlum);
   Sal = funcSal(canalSal);
-  Temp = funcTemp (canalTemp);
+  //Temp = funcTemp (canalTemp);
   // Hum = funcHum(canalHum)
 
 //--------------PRINT----------------------
@@ -243,6 +233,7 @@ static unsigned long printTime = millis();
     //Llum
 
     Serial.print("V out Llum:"); Serial.print(VoltLlum, 3); Serial.println ("V");
+    Serial.print("adcLlum"); Serial.println(adcLlum);
     if (adcLlum <= 200) {
       Serial.println("Esta a la sombra");
     }
