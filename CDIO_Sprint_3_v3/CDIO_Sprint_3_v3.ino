@@ -239,6 +239,7 @@ void setup () {
   
   connectWiFi();
   digitalWrite(LED_PIN, HIGH);
+  Serial.begin(9600);
 
   #ifdef PRINT_DEBUG_MESSAGES
       Serial.print("Server_Host: ");
