@@ -211,9 +211,9 @@ void HTTPGet(String fieldData[], int numFields){
 //
 //------------------------------------------------------------------------------------
 #define canalpH 2
-#define canalLlum 3
-#define canalTemp  1
-#define canalHum 0
+#define canalLlum 1
+#define canalTemp  0
+#define canalHum 3
 
 //----------------------------------------------------------------------------------
 //
@@ -310,14 +310,14 @@ int16_t funcLlum(unsigned int canalAdc, float * V ){
 
 float funcTemp(unsigned int canalAdc){
   
-  int16_t adc0 = ads1115.readADC_SingleEnded(0);
+ int16_t adc0 = ads1115.readADC_SingleEnded(0);
 
+  Serial.println(adc0);
 
-  float temperatura = ((((adc0*4.096)/32767)-0.75)/0.037)-5;
-  //  float temperatura = ((((adc0*4.096)/32767)-0.79)/0.035)-5;
+  float temperatura = ((((adc0*4.096)/32767)-0.75)/0.037);
+  //float temperatura = ((adc0*3.3)-(32767*b))/(32767.0*m);
 
-
-  return temperatura; //FALTAVA RETURN TEMP
+  return temperatura + 40;
 }
 //-----------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -325,37 +325,29 @@ float funcTemp(unsigned int canalAdc){
 //------------------------------------------------------
 //-----------------------------------------
 
-/*float  funcHum(unsigned int canalAdc ) {
+float  funcHum(unsigned int canalAdc ) {
+int16_t adc1;
+int16_t humedad;
+  
+int ValorSec = 30000;
+int ValorHumit = 17000;
+adc1 = ads1115.readADC_SingleEnded(canalAdc);
+humedad = map(adc1, ValorSec,ValorHumit,0,100);
+  if(humedad > 100){
+    humedad = 100;
+  }
+return humedad;
 
-
-  int16_t adc1;
-  /*
-  int16_t humedad;
-  adc1 = ads1115.readADC_SingleEnded(0);
-  humedad = 100 * AirValue / (AirValue - WaterValue) - adc1 * 100 / (AirValue - WaterValue);
-
-
-  /*Serial.print("AIN0: ");
-    Serial.println(adc1);
-    Serial.print("HR (%): ");
-    Serial.print(humedad);
-    Serial.println("%");
-     //return humedad;
-     
- 
-  int  sensorValue = analogRead (canalAdc);
-  int humidityValue = 100 * AirValue / (AirValue - WaterValue) - sensorValue * 100 / (AirValue - WaterValue);
-  return humidityValue; 
-  delay (1000);
-
-}*/
+  
+  
+}
   //---------------------------------------------------------------
   //-------------------------------------------------------
   //      FUNCION SAL
   //------------------------------------------------
   //-----------------------------------------
   
-float funcSal() {
+float funcSal(float *VoltSal) {
   int16_t adc0;
   //Alimentamos sonda con tren de pulsos
   digitalWrite(power_pin, HIGH);
@@ -365,6 +357,7 @@ float funcSal() {
   adc0 = analogRead(A0);
   digitalWrite(power_pin, LOW);
   delay(100);
+  (*VoltSal) = adc0;
   if (adc0 < 573) {
     adc0 = 573;  //Ocultem datos xicotets que donarien resultats incogruents
   }
@@ -426,10 +419,11 @@ float funcpH (int canalAdc) {
 
 void loop() {
   float pH,VoltLlum,Temp,Hum,Sal,voltatgepH = 0;
+  float VoltSal;
   int16_t adcLlum = funcLlum(canalLlum,&VoltLlum);
   pH = funcpH(canalpH);
-  Sal = funcSal();
-  //Temp = funcTemp (canalTemp);
+  Sal = funcSal( &VoltSal);
+  Temp = funcTemp (canalTemp);
   // Hum = funcHum(canalHum)
 
 //--------------PRINT----------------------
@@ -445,6 +439,7 @@ static unsigned long printTime = millis();
      //Sal
 
     Serial.print("Cantidad de sal g= "); Serial.println(Sal,2);
+    Serial.print ("VoltSal = ");  Serial.println(VoltSal,DEC);
     //Llum
 
     Serial.print("V out Llum:"); Serial.print(VoltLlum, 3); Serial.println ("V");
