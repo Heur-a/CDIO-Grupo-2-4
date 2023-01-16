@@ -12,16 +12,17 @@ void setup() {
   ads1115.setGain(GAIN_ONE);
 }
 
+
 void loop(void) {
   int16_t adc0 = ads1115.readADC_SingleEnded(0);
 
   Serial.println(adc0);
 
-  //float temperatura = ((((adc0*4.096)/32767)-0.75)/0.037);
-  float temperatura = ((adc0*3.3)-(32767*b))/(32767.0*m);
+  float temperatura = ((((adc0*4.096)/32767)-0.75)/0.037);
+  //float temperatura = ((adc0*3.3)-(32767*b))/(32767.0*m);
 
   Serial.print("La temperatura es: ");
-  Serial.print(temperatura);
+  Serial.print(temperatura+40);
   Serial.println(" ºC");
   delay(1000);
 }
