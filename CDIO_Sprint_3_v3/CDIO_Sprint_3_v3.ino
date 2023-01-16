@@ -424,7 +424,7 @@ void loop() {
   pH = funcpH(canalpH);
   Sal = funcSal( &VoltSal);
   Temp = funcTemp (canalTemp);
-  // Hum = funcHum(canalHum)
+  Hum = funcHum(canalHum)
 
 //--------------PRINT----------------------
 static unsigned long printTime = millis();
@@ -433,6 +433,10 @@ static unsigned long printTime = millis();
     Serial.print("  pH value: ");
     Serial.println(pH, 2);
     printTime = millis();
+    //Humedad
+    Serial.print(" Humedad ");
+    Serial.print(Hum);
+    Serial.println("%");
     
      //Temperatura
     Serial.print("La temperatura es: "); Serial.println(Temp,2);
