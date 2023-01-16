@@ -18,7 +18,7 @@ void loop(void) {
   Serial.println(adc0);
 
   float vo = (adc0 * 4.096) / 32767;
-  float temperatura = ((vo * 0.406) - b) / m);
+  float temperatura = ((vo * 0.406) - b) / m;
 
   Serial.print("La temperatura es: ");
   Serial.print(temperatura);
